@@ -84,5 +84,17 @@ typedef volatile unsigned char	vu_char;
 void clock_init(void);
 /* uart function */
 void uart_init(void);
+/* sdram initialize function */
+void sdram_init(void);
+/* nand initialize function */
+void nand_init(void);
+/* copy code from nand to sdram */
+void copy2ddr(unsigned long nand_start, unsigned long ddr_start, unsigned long len);
+/* write nand section */
+void nand_write(unsigned int nand_start, unsigned char * buf, unsigned int len);
+/* read nand section */
+void nand_read(unsigned int nand_start, unsigned int ddr_start, unsigned int len);
+/* erase nand block */
+void nand_erase_block(unsigned long addr);
 
 #endif

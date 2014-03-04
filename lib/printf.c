@@ -1,6 +1,5 @@
 #include "vsprintf.h"
 #include "string.h"
-#include "printf.h"
 
 extern void putc(unsigned char c);
 extern unsigned char getc(void);
@@ -8,10 +7,8 @@ extern unsigned char getc(void);
 #define	OUTBUFSIZE	1024
 #define	INBUFSIZE	1024
 
-
 static unsigned char g_pcOutBuf[OUTBUFSIZE];
 static unsigned char g_pcInBuf[INBUFSIZE];
-
 
 int printf(const char *fmt, ...)
 {
@@ -28,8 +25,6 @@ int printf(const char *fmt, ...)
 	}
 	return len;
 }
-
-
 
 int scanf(const char * fmt, ...)
 {
@@ -58,4 +53,3 @@ int scanf(const char * fmt, ...)
 
 	return i;
 }
-

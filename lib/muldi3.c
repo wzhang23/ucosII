@@ -74,4 +74,3 @@ __muldi3 (DItype u, DItype v)
 
   return w.ll;
 }
-

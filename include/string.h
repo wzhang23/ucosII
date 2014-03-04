@@ -1,10 +1,3 @@
-
-/* We don't want strings.h stuff being user by user stuff by accident */
-
-
-//#include <linux/types.h>	/* for size_t */
-//#include <linux/stddef.h>	/* for NULL */
-
 #include "types.h"
 
 extern char * ___strtok;
@@ -12,12 +5,6 @@ extern char * strpbrk(const char *,const char *);
 extern char * strtok(char *,const char *);
 extern char * strsep(char **,const char *);
 extern size_t strspn(const char *,const char *);
-
-
-/*
- * Include machine specific inline routines
- */
-//#include <asm/string.h>
 
 #ifndef __HAVE_ARCH_STRCPY
 extern char * strcpy(char *,const char *);
@@ -74,5 +61,3 @@ extern int memcmp(const void *,const void *,size_t);
 #ifndef __HAVE_ARCH_MEMCHR
 extern void * memchr(const void *,int,size_t);
 #endif
-
-
