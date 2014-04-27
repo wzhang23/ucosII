@@ -19,8 +19,6 @@
 //#include <stdarg.h>
 //#include <linux/module.h>
 #include "types.h"
-#include "kernel.h"
-
 #include "ctype.h"
 #include "string.h"
 #include "div64.h"

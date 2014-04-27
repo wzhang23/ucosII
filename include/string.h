@@ -1,3 +1,6 @@
+#ifndef _STRING_H_
+#define _STRING_H_
+
 #include "types.h"
 
 extern char * ___strtok;
@@ -60,4 +63,6 @@ extern int memcmp(const void *,const void *,size_t);
 #endif
 #ifndef __HAVE_ARCH_MEMCHR
 extern void * memchr(const void *,int,size_t);
+#endif
+
 #endif

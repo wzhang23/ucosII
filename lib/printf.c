@@ -1,14 +1,15 @@
+#include "types.h"
 #include "vsprintf.h"
 #include "string.h"
 
-extern void putc(unsigned char c);
-extern unsigned char getc(void);
+extern INT8S uart_getc(void);
+extern void uart_putc(INT8S ch);
 
 #define	OUTBUFSIZE	1024
 #define	INBUFSIZE	1024
 
-static unsigned char g_pcOutBuf[OUTBUFSIZE];
-static unsigned char g_pcInBuf[INBUFSIZE];
+static char g_pcOutBuf[OUTBUFSIZE];
+static char g_pcInBuf[INBUFSIZE];
 
 int printf(const char *fmt, ...)
 {
@@ -21,7 +22,7 @@ int printf(const char *fmt, ...)
 	va_end(args);
 	for (i = 0; i < strlen(g_pcOutBuf); i++)
 	{
-		putc(g_pcOutBuf[i]);
+		uart_putc(g_pcOutBuf[i]);
 	}
 	return len;
 }
@@ -34,8 +35,8 @@ int scanf(const char * fmt, ...)
 	
 	while(1)
 	{
-		c = getc();
-		putc(c);
+		c = uart_getc();
+		uart_putc(c);
 		if((c == 0x0d) || (c == 0x0a))
 		{
 			g_pcInBuf[i] = '\0';

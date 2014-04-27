@@ -65,7 +65,9 @@ static  void  OS_InitEventList(void);
 static  void  OS_InitMisc(void);
 static  void  OS_InitRdyList(void);
 static  void  OS_InitTaskIdle(void);
+#if OS_TASK_STAT_EN > 0
 static  void  OS_InitTaskStat(void);
+#endif
 static  void  OS_InitTCBList(void);
 
 /*$PAGE*/

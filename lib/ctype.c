@@ -3,7 +3,6 @@
  *
  *  Copyright (C) 1991, 1992  Linus Torvalds
  */
-
 #include "ctype.h"
 
 unsigned char _ctype[] = {

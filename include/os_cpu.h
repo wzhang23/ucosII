@@ -28,18 +28,16 @@
 *                                         (Compiler Specific)
 *********************************************************************************************************
 */
+typedef unsigned int	OS_STK;                  /* Each stack entry is -bit wide	*/
+typedef unsigned int	OS_CPU_SR;               /* The CPU Status Word is 32-bit wide	*/
+typedef unsigned int	OS_FLAGS;   			 			 /* Date type for event flag bits (8, 16 or 32 bits)	*/
 
-typedef signed	 int   BOOLEAN;
-typedef float          FP32;                     /* Single precision floating point                    */
-typedef double         FP64;                     /* Double precision floating point                    */
-
-typedef unsigned char   OS_STK;                  /* Each stack entry is 8-bit wide                     */
-typedef unsigned char   OS_CPU_SR;               /* The CPU Status Word is 8-bit wide                  */
-typedef unsigned int    OS_FLAGS;   			 /* Date type for event flag bits (8, 16 or 32 bits)   */
+OS_CPU_SR disableInterrupts(void);
+void enableInterrupts(OS_CPU_SR cpu_sr);
+void os_timer_init(void);
 
 /* 
 *********************************************************************************************************
-*                              S3C6410
 *
 * Method #1:  Disable/Enable interrupts using simple instructions.  After critical section, interrupts
 *             will be enabled even if they were disabled before entering the critical section.
@@ -58,17 +56,17 @@ typedef unsigned int    OS_FLAGS;   			 /* Date type for event flag bits (8, 16 
 #define  OS_CRITICAL_METHOD    3
 
 #if	OS_CRITICAL_METHOD == 3
-#define  OS_ENTER_CRITICAL()  {}        /* Disable interrupts */
-#define  OS_EXIT_CRITICAL()   {}        /* Enable  interrupts */
+#define  OS_ENTER_CRITICAL()	cpu_sr = disableInterrupts()		/* store cpu status and disable interrupts */
+#define  OS_EXIT_CRITICAL()		enableInterrupts(cpu_sr)				/* restore cpu status */
 #endif
+
 /*
 *********************************************************************************************************
-*                           S3C6410 Miscellaneous
+*                           Miscellaneous
 *********************************************************************************************************
 */
+#define  OS_STK_GROWTH      1                       /* Stack grows from HIGH to LOW memory */
 
-#define  OS_STK_GROWTH      1                       /* Stack grows from HIGH to LOW memory on MC9S12  */
-
-#define  OS_TASK_SW()       {}
+#define  OS_TASK_SW()       OSCtxSw()								/* Switch context interrupt */ 
 
 #endif

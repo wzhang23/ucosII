@@ -6,16 +6,13 @@
 *                         (c) Copyright 2002, Jean J. Labrosse, Weston, FL
 *                                          All Rights Reserved
 *
-*                                       PAGED S12XE Specific code
-*                                           (Codewarrior V4.5)
 *                                                 
 *
 * File         : OS_CPU_C.C
-* By           : Eric Shufro
-* Port Version : V2.81 and higher)
+* By           : 
+* Port Version : 
 *********************************************************************************************************
 */
-
 #include  "ucos_II.h"
 
 /*
@@ -150,23 +147,38 @@ void  OSTaskStatHook (void)
 * Returns    : Always returns the location of the new top-of-stack' once the processor registers have
 *              been placed on the stack in the proper order.
 *
-* Note(s)    : 1) XIRQ interrupts are disabled when your task starts executing. You can change this by 
-*                 clearing BIT6 in the CCR.
-*              2) The STOP instruction is disabled when your task starts executing.  You can change this
-*                 by clearing BIT7 in the CCR.
-*              3) The other interrupts (i.e. maskable interrupts) are enabled when your task starts
-*                 executing.  You can change this by setting BIT4 in the CCR.
-*              4) You can change pass the above options in the 'opt' argument.  You MUST only use the
-*                 upper 8 bits of 'opt' because the lower bits are reserved by uC/OS-II.  If you make
-*                 changes to the code below, you will need to ensure that it doesn't affect the behaviour
-*                 of OSTaskIdle() and OSTaskStat().
-*              5) Registers are initialized to make them easy to differentiate with a debugger.
-*              6) Take the current values of GPAGE, EPAGE and RPAGE
+* Note(s)    : 
 *********************************************************************************************************
 */
-
 OS_STK *OSTaskStkInit (void (*task)(void *pd), void *p_arg, OS_STK *ptos, INT16U opt)
 {
+	OS_STK * fl_p_stk;
+
+	opt = opt;
+
+	fl_p_stk = ptos;
+
+	/*
+	 * The ARM stack using Full Decrement
+	 */
+	*(fl_p_stk) = (INT32U)task; /* pc */
+	*(--fl_p_stk) = (INT32U)0;	/* lr */
+	*(--fl_p_stk) = (INT32U)0;	/* R12 */
+	*(--fl_p_stk) = (INT32U)0;	/* R11 */
+	*(--fl_p_stk) = (INT32U)0;	/* R10 */
+	*(--fl_p_stk) = (INT32U)0;	/* R9 */
+	*(--fl_p_stk) = (INT32U)0;	/* R8 */
+	*(--fl_p_stk) = (INT32U)0;	/* R7 */
+	*(--fl_p_stk) = (INT32U)0;	/* R6 */
+	*(--fl_p_stk) = (INT32U)0;	/* R5 */
+	*(--fl_p_stk) = (INT32U)0;	/* R4 */
+	*(--fl_p_stk) = (INT32U)0;	/* R3 */
+	*(--fl_p_stk) = (INT32U)0;	/* R2 */
+	*(--fl_p_stk) = (INT32U)0;	/* R1 */
+	*(--fl_p_stk) = (INT32U)p_arg;	/* R0: argument */
+	*(--fl_p_stk) = (INT32U)0x0000015f;	/* CPSR: enable IRQ, disable FIQ, system mode */
+
+	return (fl_p_stk);
 	/* Return pointer to new top-of-stack                   */
 }
 
@@ -209,7 +221,6 @@ void  OSTCBInitHook (OS_TCB *ptcb)
 }
 #endif
 
-
 /*
 *********************************************************************************************************
 *                                               TICK HOOK
@@ -227,5 +238,69 @@ void  OSTimeTickHook (void)
 }
 #endif
 
+/*
+*********************************************************************************************************
+*                                             disable global interrupt 
+*
+* Description: This function will disable global interrupt
+*
+* Arguments  : none
+*
+* Returns		:		OS_CPU_SR	-	the status of CPU
+*********************************************************************************************************
+*/
+OS_CPU_SR disableInterrupts(void)
+{
+	OS_CPU_SR cpu_sr;
+	
+	asm __volatile__(
+			"mrs r0, cpsr\n\t"\
+			"str r0, %[asm_cpu_sr]\n\t"\
+			"cpsid if"
+			: [asm_cpu_sr] "+m" (cpu_sr)
+			:
+			: "memory"
+	);	
 
+	return cpu_sr;
+}
 
+/*
+*********************************************************************************************************
+*                                             enable global interrupts 
+*
+* Description: This function will restore CPU cpsr register
+*
+* Arguments  :	The CPU status had been stored.
+*
+* Returns		:	none 
+*********************************************************************************************************
+*/
+void enableInterrupts(OS_CPU_SR cpu_sr)
+{
+	asm __volatile__(
+		"ldr r0, %[asm_cpu_sr]\n\t"\
+		"msr cpsr, r0"
+		:
+		: [asm_cpu_sr] "m" (cpu_sr)
+	);
+}
+
+/*
+*********************************************************************************************************
+*                                            OS Tick timer ISR 
+*
+* Description: This function is the interrupt service routine of OS Tick timer
+*
+* Arguments  :	
+*
+* Returns		:	none 
+*********************************************************************************************************
+*/
+void OSTickISR(void)
+{
+	VIC0VECTADDR_REG = 0;
+	INTP_REG |= 0x01;
+	OSTimeTick();
+	OSIntExit();
+}

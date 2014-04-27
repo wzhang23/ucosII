@@ -11,21 +11,7 @@
 ; By           : 
 ;
 ; Notes        : 
-;********************************************************************************************************
-
-;********************************************************************************************************
-;                                           I/O PORT ADDRESSES
-;********************************************************************************************************
-
-;********************************************************************************************************
-;                                          PUBLIC DECLARATIONS
-;********************************************************************************************************
-*/
-    
-/********************************************************************************************************
-;                                         EXTERNAL DECLARATIONS
-;********************************************************************************************************
-*/
+;********************************************************************************************************/
 
 /********************************************************************************************************
 ;                               START HIGHEST PRIORITY TASK READY-TO-RUN
@@ -37,19 +23,22 @@
 ;
 ; Note(s)     : 1) The stack frame is assumed to look as follows:
 ;   
-;                  OSTCBHighRdy->OSTCBStkPtr +  0  -->  pPAGE
-;                                            +  1       rPAGE
-;                                            +  2       ePAGE
-;                                            +  3       gPAGE
-;                                            +  1       CCRW
-;                                            +  2       B
-;                                            +  3       A
-;                                            +  4       X (H)
-;                                            +  5       X (L)
-;                                            +  6       Y (H)
-;                                            +  7       Y (L)
-;                                            +  8       PC(H)
-;                                            +  9       PC(L)
+;                  OSTCBHighRdy->OSTCBStkPtr +  0  -->  CPSR
+;                                            +  1       R0
+;                                            +  2       R1
+;                                            +  3       R2
+;                                            +  4       R3
+;                                            +  5       R4
+;                                            +  6       R5
+;                                            +  7       R6
+;                                            +  8       R7
+;                                            +  9       R8
+;                                            +  10      R9
+;                                            +  11      R10
+;                                            +  12      R11
+;																						 +	13			R12
+;																						 +	14			LR
+;																						 +	15			PC
 ;
 ;               2) OSStartHighRdy() MUST:
 ;                      a) Call OSTaskSwHook() then,
@@ -60,7 +49,16 @@
 */
 .global OSStartHighRdy
 OSStartHighRdy:
-    
+	ldr r0, =OSRunning
+	mov r1, #1
+	strb r1, [r0]
+	ldr r0, =OSTCBHighRdy
+	ldr r0, [r0]
+	ldr sp, [r0]
+	ldmia sp!, {r0}
+	msr cpsr, r0
+	ldmia sp!, {r0-r12, lr, pc}
+
 /********************************************************************************************************
 ;                                       TASK LEVEL CONTEXT SWITCH
 ;
@@ -72,71 +70,95 @@ OSStartHighRdy:
 ;                  OSTCBCur     points to the OS_TCB of the task to suspend
 ;                  OSTCBHighRdy points to the OS_TCB of the task to resume
 ;
-;               2) The stack frame of the task to suspend looks as follows:
-;
-;                  SP            CCR
-;                     +  2       B
-;                     +  3       A
-;                     +  4       X (H)
-;                     +  5       X (L)
-;                     +  6       Y (H)
-;                     +  7       Y (L)
-;                     +  8       PC(H)
-;                     +  9       PC(L)
-;
-;               3) The stack frame of the task to resume looks as follows:
+;               2) The stack frame of the task to resume looks as follows:
 ; 
-;                  OSTCBHighRdy->OSTCBStkPtr +  0  -->  pPAGE
-;                                            +  1       rPAGE
-;                                            +  2       ePAGE
-;                                            +  3       gPAGE
-;                                            +  4       CCR
-;                                            +  6       B
-;                                            +  7       A
-;                                            +  8       X (H)
-;                                            +  9       X (L)
-;                                            + 10       Y (H)
-;                                            + 11       Y (L)
-;                                            + 12       PC(H)
-;                                            + 13       PC(L)
-;********************************************************************************************************
+;                  OSTCBrHighRdy->OSTCBStkPtr +  0  -->  CPSR
+;                                            +  1       R0
+;                                            +  2       R1
+;                                            +  3       R2
+;                                            +  4       R3
+;                                            +  5       R4
+;                                            +  6       R5
+;                                            +  7       R6
+;                                            +  8       R7
+;                                            +  9       R8
+;                                            +  10      R9
+;                                            +  11      R10
+;                                            +  12      R11
+;																						 +	13			R12
+;																						 +	14			LR
+;																						 +	15			PC
+********************************************************************************************************
 */
 .global OSCtxSw
-OSCtxSw:                                        
+OSCtxSw:
+	/* push current task CPU context */
+	stmdb sp!, {lr} /* push pc */
+	stmdb sp!, {r0-r12, lr}
+	mrs r0, cpsr
+	stmdb sp!, {r0}
+
+	/* Store current task stack pointer */
+	ldr r0, =OSTCBCur
+	ldr r0, [r0]
+	str sp, [r0]
+
+	bl OSTaskSwHook
+	
+	/* Get the next task TCB */
+	ldr r0, =OSTCBHighRdy
+	ldr r0, [r0]
+	ldr r1, =OSTCBCur
+	str r0, [r1]
+	ldr r3, =OSPrioHighRdy
+	ldr r3, [r3]
+	ldr r4, =OSPrioCur
+	str r3, [r4]
+
+	/* Switch the next task's CPU context */
+	ldr sp, [r0]
+	ldmia sp!, {r0}
+	msr cpsr, r0
+	ldmia sp!, {r0-r12, lr, pc}
 
 /********************************************************************************************************
 ;                                    INTERRUPT LEVEL CONTEXT SWITCH
 ;
 ; Description : This function is called by OSIntExit() to perform a context switch to a task that has
-;               been made ready-to-run by an ISR. The GPAGE, EPAGE, RPAGE and PPAGE CPU registers of the 
-;               preempted task have already been stacked during the start of the ISR that is currently 
-;               running.
+;               been made ready-to-run by an ISR. 
 ;
 ; Arguments   : none
 ;********************************************************************************************************
 */
 .global OSIntCtxSw
 OSIntCtxSw:                                  
+	bl OSTaskSwHook
+	/* Get the next task TCB */
+	ldr r0, =OSTCBHighRdy
+	ldr r0, [r0]
+	ldr r1, =OSTCBCur
+	str r0, [r1]
+	ldr r3, =OSPrioHighRdy
+	ldr r3, [r3]
+	ldr r4, =OSPrioCur
+	str r3, [r4]
+
+	/* Switch the next task's CPU context */
+	ldr sp, [r0]
+	ldmia sp!, {r0}
+	msr cpsr, r0
+	ldmia sp!, {r0-r12, lr, pc}
 
 /********************************************************************************************************
 ;                                           SYSTEM TICK ISR
 ;
-; Description : This function is the ISR used to notify uC/OS-II that a system tick has occurred.  You 
-;               must setup the S12XE's interrupt vector table so that an OUTPUT COMPARE interrupt 
-;               vectors to this function.
+; Description : This function is the ISR used to notify uC/OS-II that a system tick has occurred. 
 ;
 ; Arguments   : none
 ;
-; Notes       :  1) The 'tick ISR' assumes the we are using the Output Compare specified by OS_TICK_OC
-;                   (see APP_CFG.H and this file) to generate a tick that occurs every OS_TICK_OC_CNTS 
-;                   (see APP_CFG.H) which corresponds to the number of FRT (Free Running Timer) 
-;                   counts to the next interrupt.
-;
-;                2) All USER interrupts should be modeled EXACTLY like this where the only
-;                   line to be modified is the call to your ISR_Handler and perhaps the call to
-;                   the label name OSTickISR1.
-;********************************************************************************************************
+;********************************************************************************************************/
+/*
+*	Had been implemented in os_cpu_c.c
 */
-.global OSTickISR
-OSTickISR:
-    
+ 
+/* End of File */

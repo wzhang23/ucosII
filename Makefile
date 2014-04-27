@@ -1,32 +1,25 @@
 CC_DIR=/opt/FriendlyARM/toolschain/4.5.1/bin/arm-linux-
 CC=$(CC_DIR)gcc
-CC_CMD=-Iinclude -Wall
 LD=$(CC_DIR)ld
 NM=$(CC_DIR)nm
 AR=$(CC_DIR)ar
 OBJCOPY=$(CC_DIR)objcopy
 OBJDUMP=$(CC_DIR)objdump
 
-INCLUDEDIR := $(shell pwd)/include
-CFLAGS		:= -Wall -Os -fno-builtin -nostdinc -I$(INCLUDEDIR) -fno-builtin-printf -nostdlib -mcpu=arm1176jzf-s
+INCLUDE_DIR	:= $(shell pwd)/include
+CFLAGS		:= -Wall -Os -fno-builtin -nostdinc -fno-builtin-printf -nostdlib -I$(INCLUDE_DIR) -mcpu=arm1176jzf-s
 
-export CC AR LD NM OBJCOPY OBJDUMP INCLUDEDIR CFLAGS
+objs	:= startup/startup.o startup/clk.o startup/irq.o startup/sdram.o startup/nand.o startup/uart.o \
+				 product/sched.o \
+				 lib/ctype.o lib/div64.o lib/muldi3.o lib/printf.o lib/string.o lib/vsprintf.o \
+				 ucosII/os_cpu_a.o ucosII/os_cpu_c.o ucosII/os_core.o ucosII/os_task.o ucosII/os_flag.o ucosII/os_mbox.o \
+				 ucosII/os_mem.o ucosII/os_mutex.o ucosII/os_q.o ucosII/os_time.o ucosII/os_sem.o
 
-objs	:= startup.o sdram.o nand.o clk.o uart.o main.o irq.o lib/libc.a ucosII/ucosII.a
-
-main.bin:$(objs)
-	$(LD) -T main.lds -o main.elf $^
-	$(OBJCOPY) -O binary main.elf $@
-	$(OBJDUMP) -D main.elf > main.dis
-	$(NM) -B --numeric-sort main.elf > main.map
-
-.PHONY :	lib/lib.a
-lib/libc.a:
-	cd lib; make; cd ..
-
-.PHONY :	ucosII/ucosII.a
-ucosII/ucosII.a:
-	cd ucosII; make; cd ..
+exec/main.bin:$(objs)
+	$(LD) -T main.lds -o exec/main.elf $^
+	$(OBJCOPY) -O binary exec/main.elf $@
+	$(OBJDUMP) -D exec/main.elf > exec/main.dis
+	$(NM) -B --numeric-sort exec/main.elf > exec/main.map
 
 %.o:%.S
 	$(CC) $(CFLAGS) -c -o $@ $<
@@ -34,6 +27,4 @@ ucosII/ucosII.a:
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	make clean -C lib
-	make clean -C ucosII
-	rm -f *.o *.elf *.bin *.dis *.out *.map
+	rm -f exec/* *.o product/*.o startup/*.o lib/*.o ucosII/*.o

@@ -1,9 +1,14 @@
+OUTPUT_FORMAT("elf32-littlearm", "elf32-bigarm", "elf32-littlearm")
+ENTRY(_start) /* the entry point */
 SECTIONS
 {
 	. = 0x50000000;		/* current address */
+
+	.startup : {
+		startup/* (.text) /* the startup code must be in the first 8k memory */
+	}
 	
 	.text : {
-		startup.o
 		* (.text)
 	}
 

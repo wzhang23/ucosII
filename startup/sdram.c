@@ -1,5 +1,4 @@
-#include "common.h"
-#include "s3c6410.h"
+#include "includes.h"
 
 #define HCLK	133000000
 

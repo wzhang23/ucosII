@@ -37,7 +37,7 @@
 
 #define OS_TASK_IDLE_STK_SIZE   512    /* Idle task stack size (# of OS_STK wide entries)              */
 
-#define OS_TASK_STAT_EN           1    /* Enable (1) or Disable(0) the statistics task                 */
+#define OS_TASK_STAT_EN           0    /* Enable (1) or Disable(0) the statistics task                 */
 #define OS_TASK_STAT_STK_SIZE   512    /* Statistics task stack size (# of OS_STK wide entries)        */
 
 #define OS_ARG_CHK_EN             1    /* Enable (1) or Disable (0) argument checking                  */
@@ -110,7 +110,7 @@
 #define OS_SCHED_LOCK_EN          1    /*     Include code for OSSchedLock() and OSSchedUnlock()       */
 
 
-#define OS_TICKS_PER_SEC          100   /* Set the number of ticks in one second                        */
+#define OS_TICKS_PER_SEC          1000   /* Set the number of ticks in one second                        */
 #define OS_TIME_TICK_HOOK_EN	    1
 
 #endif

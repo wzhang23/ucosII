@@ -367,7 +367,9 @@ INT8U  OSTaskDel (INT8U prio)
     OS_FLAG_NODE *pnode;
 #endif
     OS_TCB       *ptcb;
+#if 0 /* stop compile warning. 4/26/2014 by weiz */
     BOOLEAN       self;
+#endif
 
 
 
