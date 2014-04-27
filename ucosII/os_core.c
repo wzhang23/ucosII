@@ -982,7 +982,8 @@ void  OS_TaskStat (void *pdata)
 					#if 0
             usage = (INT8S)(100L - run / max);
 					#endif
-						usage = (INT8S)(100L - do_div(run, max));
+						do_div(run, max);
+						usage = (INT8S)(100L - run);
             if (usage >= 0) {                    /* Make sure we don't have a negative percentage      */
                 OSCPUUsage = usage;
             } else {
