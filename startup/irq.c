@@ -35,6 +35,7 @@ void do_irq(void)
 
 	the_isr();
 	VIC0VECTADDR_REG = 0;
+	OSIntExit();
 }
 
 /*

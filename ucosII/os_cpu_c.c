@@ -302,5 +302,4 @@ void OSTickISR(void)
 	VIC0VECTADDR_REG = 0;
 	INTP_REG |= 0x01;
 	OSTimeTick();
-	OSIntExit();
 }
