@@ -55,6 +55,16 @@ clean_loop:
 	str r2, [r0], #4
 	cmp r0, r1
 	bne clean_loop
+
+	/* clean frame buffer section */
+clean_fb:
+	ldr r0, = framebuffer_start
+	ldr r1, = framebuffer_end
+	mov r2, #0
+clean_fb_loop:
+	str r2, [r0], #4
+	cmp r0, r1
+	bne clean_fb_loop
 	ldr pc, =on_ddr
 
 on_ddr:
@@ -66,7 +76,7 @@ on_ddr:
 	msr cpsr, r0 /* Enter system mode */
 
 	/* Initialize sp and call c funtion */
-	ldr sp, =0x50000000 + 0x10000000
+	ldr sp, =0x50000000 + 0xFA00000
 
 	/* Jump runtime address */
 	ldr pc, =app /* using location-relation code */
@@ -76,7 +86,7 @@ halt:
 
 vector_irq:
 	/* 1. ... */
-	ldr sp, =0x54000000
+	ldr sp, =0x60000000
 	sub lr, lr, #4 /* Be different from other exp. */
 	stmdb sp!, {r0}
 	mov r0, lr

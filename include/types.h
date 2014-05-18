@@ -5,6 +5,12 @@
 #define		NULL	0
 #endif
 
+enum
+{
+	FALSE = 0U,
+	TRUE = ~(FALSE),
+};
+
 #ifndef _SIZE_T
 #define _SIZE_T
 typedef unsigned int size_t;

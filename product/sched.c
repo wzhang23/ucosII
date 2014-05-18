@@ -10,7 +10,7 @@
  */
 #include "includes.h"	/* user top header file */
 #include "stdio.h"
-
+#include "hmi.h"
 
 /*
 *********************************************************************************************************
@@ -47,6 +47,7 @@ typedef struct
 #define	TASK_500MS_ID			6
 #define	TASK_1KMS_ID			7
 #define TASK_STK_CHK_ID   8
+#define TASK_ROBIN_ID			9
 
 #define TASK_START_PRIO		0
 #define TASK_1MS_PRIO			1
@@ -57,6 +58,7 @@ typedef struct
 #define	TASK_500MS_PRIO		6
 #define	TASK_1KMS_PRIO		7
 #define TASK_STK_CHK_PRIO 8
+#define TASK_ROBIN_PRIO		60
 
 #define TASK_STACK_CHECK_ENABLE
 
@@ -77,6 +79,7 @@ OS_STK  Task1KMSStk[TASK_STK_SIZE];
 #ifdef TASK_STACK_CHECK_ENABLE
 OS_STK  TaskStkChkStk[TASK_STK_SIZE];
 #endif
+OS_STK	TaskStkRobin[TASK_STK_SIZE];
 
 /*
 *********************************************************************************************************
@@ -96,6 +99,7 @@ OS_STK  TaskStkChkStk[TASK_STK_SIZE];
 #ifdef TASK_STACK_CHECK_ENABLE
        void TaskStkChk(void *);
 #endif
+			 void TaskRobin(void *pdata);
 static void TaskStartCreateTasks(void);
 
 /*
@@ -116,6 +120,7 @@ TASK_PARA_ST task_para[] =
 #ifdef TASK_STACK_CHECK_ENABLE
 	{8, 8, TaskStkChk, &TaskStkChkStk[TASK_STK_SIZE-1], &TaskStkChkStk[0], TASK_STK_SIZE, {0,0}},
 #endif
+	{9, 60, TaskRobin, &TaskStkRobin[TASK_STK_SIZE-1], &TaskStkRobin[0], TASK_STK_SIZE, {0,0}},
 };
 
 /*
@@ -204,7 +209,7 @@ static void TaskStartCreateTasks(void)
 void Task1MS(void *pdata)
 {
 	pdata = pdata;
-  
+
 	printf("Task1MS started!\r\n");
 
 	for(;;) {
@@ -321,6 +326,7 @@ void Task1KMS(void *pdata)
 	printf("Task1KMS started!\r\n");
 
 	for(;;) {
+
 		if((GPKDAT_REG & 0x10) == 0)
 		{
 			GPKDAT_REG |= 0x10;
@@ -330,6 +336,21 @@ void Task1KMS(void *pdata)
 			GPKDAT_REG &= ~0x10;
 		}
 		OSTimeDly(OS_TICKS_PER_SEC);
+	}
+}
+/*
+*********************************************************************************************************
+*                                           Robin TASK
+*********************************************************************************************************
+*/
+void TaskRobin(void *pdata)
+{
+	HMIInit();
+
+	for(;;)
+	{
+		HMIStep();
+		OSTimeDly(1);
 	}
 }
 

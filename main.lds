@@ -21,4 +21,6 @@ SECTIONS
 		* (.bss)
 	}
 	bss_end	  = .;
+	framebuffer_start = 0x51000000;
+	framebuffer_end 	= 0x51200000;
 }

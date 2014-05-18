@@ -13,7 +13,8 @@ objs	:= startup/startup.o startup/clk.o startup/irq.o startup/sdram.o startup/na
 				 product/sched.o \
 				 lib/ctype.o lib/div64.o lib/muldi3.o lib/printf.o lib/string.o lib/vsprintf.o \
 				 ucosII/os_cpu_a.o ucosII/os_cpu_c.o ucosII/os_core.o ucosII/os_task.o ucosII/os_flag.o ucosII/os_mbox.o \
-				 ucosII/os_mem.o ucosII/os_mutex.o ucosII/os_q.o ucosII/os_time.o ucosII/os_sem.o
+				 ucosII/os_mem.o ucosII/os_mutex.o ucosII/os_q.o ucosII/os_time.o ucosII/os_sem.o \
+				 hmi/drv/lcd01_drv.o hmi/rte/hmi_rte.o hmi/rte/font_8x8.o hmi/app/hmi.o \
 
 exec/main.bin:$(objs)
 	$(LD) -T main.lds -o exec/main.elf $^
@@ -27,4 +28,4 @@ exec/main.bin:$(objs)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	rm -f exec/* *.o product/*.o startup/*.o lib/*.o ucosII/*.o
+	rm -f exec/* *.o product/*.o startup/*.o lib/*.o ucosII/*.o hmi/drv/*.o hmi/rte/*.o hmi/app/*.o
